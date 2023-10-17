@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916351585483",
+    "project_id": "chats-ton",
+    "storage_bucket": "chats-ton.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916351585483:android:4c7947d55aa7d866d39f4e",
+        "android_client_info": {
+          "package_name": "com.chatston.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmRHqWuQ3lUA0aWURtdxPRB0X9F9Q01ZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
