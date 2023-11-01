@@ -48,5 +48,22 @@
 	<true/>
 	<key>NSContactsUsageDescription</key>
     <string>Reason we need access to the contact list</string>
+	<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleIdentifier</key>
+        <string></string>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.googleusercontent.apps.916351585483-72306fc86deb12c4d39f4e</string>
+        </array>
+    </dict>
+</array>
+<key>NSCameraUsageDescription</key>
+<string>$(PRODUCT_NAME) Camera Usage!</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>$(PRODUCT_NAME) Microphone Usage!</string>
 </dict>
 </plist>

@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 class ArrowButton extends StatelessWidget {
   final Color color;
   final String icon;
+
   const ArrowButton({super.key, required this.color, required this.icon});
 
   @override

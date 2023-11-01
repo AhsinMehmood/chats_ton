@@ -4,7 +4,7 @@ import 'package:chats_ton/UI/Widgets/big_button.dart';
 import 'package:chats_ton/UI/Widgets/loading_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+// import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,6 +43,7 @@ class _LoginPageState extends State<LoginPage> {
             //     ));
           },
           verificationFailed: (FirebaseAuthException e) {
+            print(e.toString());
             Get.close(1);
           },
           codeSent: (String verificationId, int? resendToken) {

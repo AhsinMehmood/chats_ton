@@ -44,38 +44,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDCHGlT8JNGAnySk3NC9KLjcAoNjlmpExQ',
-    appId: '1:916351585483:web:2293ed57f179461ad39f4e',
-    messagingSenderId: '916351585483',
-    projectId: 'chats-ton',
-    authDomain: 'chats-ton.firebaseapp.com',
-    storageBucket: 'chats-ton.appspot.com',
-    measurementId: 'G-3H0XXZJZKE',
+    apiKey: 'AIzaSyC75Dp_i3I63s0GpeuGVrv4ahh1UTKmKcI',
+    appId: '1:359885495778:web:fd72107ddfd28c1ff92dbb',
+    messagingSenderId: '359885495778',
+    projectId: 'mpl11-92ebf',
+    authDomain: 'mpl11-92ebf.firebaseapp.com',
+    databaseURL: 'https://mpl11-92ebf.firebaseio.com',
+    storageBucket: 'mpl11-92ebf.appspot.com',
+    measurementId: 'G-YJQYVFG9WH',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAmRHqWuQ3lUA0aWURtdxPRB0X9F9Q01ZE',
-    appId: '1:916351585483:android:4c7947d55aa7d866d39f4e',
-    messagingSenderId: '916351585483',
-    projectId: 'chats-ton',
-    storageBucket: 'chats-ton.appspot.com',
+    apiKey: 'AIzaSyCsi19143wtD9sbKlVzJ6NLyORxYOPFxps',
+    appId: '1:359885495778:android:92bced6567a8c4f8f92dbb',
+    messagingSenderId: '359885495778',
+    projectId: 'mpl11-92ebf',
+    databaseURL: 'https://mpl11-92ebf.firebaseio.com',
+    storageBucket: 'mpl11-92ebf.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCkVbXzJb1rez3U0awKT7Kws7bm04FKOLc',
-    appId: '1:916351585483:ios:72306fc86deb12c4d39f4e',
-    messagingSenderId: '916351585483',
-    projectId: 'chats-ton',
-    storageBucket: 'chats-ton.appspot.com',
+    apiKey: 'AIzaSyDbBmQwGK-r28K8A1YcG0rnpDtOiAPn5Zk',
+    appId: '1:359885495778:ios:5e0032e78699bb68f92dbb',
+    messagingSenderId: '359885495778',
+    projectId: 'mpl11-92ebf',
+    databaseURL: 'https://mpl11-92ebf.firebaseio.com',
+    storageBucket: 'mpl11-92ebf.appspot.com',
+    androidClientId: '359885495778-13mdn45mop2mc3udr90m96nmim6nl0ml.apps.googleusercontent.com',
+    iosClientId: '359885495778-jdj8r3s3acfg1tgdae05fjjcqlbo7fi3.apps.googleusercontent.com',
     iosBundleId: 'com.example.chatsTon',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCkVbXzJb1rez3U0awKT7Kws7bm04FKOLc',
-    appId: '1:916351585483:ios:4967d6eeb7717980d39f4e',
-    messagingSenderId: '916351585483',
-    projectId: 'chats-ton',
-    storageBucket: 'chats-ton.appspot.com',
+    apiKey: 'AIzaSyDbBmQwGK-r28K8A1YcG0rnpDtOiAPn5Zk',
+    appId: '1:359885495778:ios:22276e2e6c1fa47df92dbb',
+    messagingSenderId: '359885495778',
+    projectId: 'mpl11-92ebf',
+    databaseURL: 'https://mpl11-92ebf.firebaseio.com',
+    storageBucket: 'mpl11-92ebf.appspot.com',
+    androidClientId: '359885495778-13mdn45mop2mc3udr90m96nmim6nl0ml.apps.googleusercontent.com',
+    iosClientId: '359885495778-0s2rtivao8bcjgtfgbjl5ep71k29fr5c.apps.googleusercontent.com',
     iosBundleId: 'com.example.chatsTon.RunnerTests',
   );
 }

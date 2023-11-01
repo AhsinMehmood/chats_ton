@@ -1,26 +1,132 @@
 {
   "project_info": {
-    "project_number": "916351585483",
-    "project_id": "chats-ton",
-    "storage_bucket": "chats-ton.appspot.com"
+    "project_number": "359885495778",
+    "firebase_url": "https://mpl11-92ebf.firebaseio.com",
+    "project_id": "mpl11-92ebf",
+    "storage_bucket": "mpl11-92ebf.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:916351585483:android:4c7947d55aa7d866d39f4e",
+        "mobilesdk_app_id": "1:359885495778:android:92bced6567a8c4f8f92dbb",
         "android_client_info": {
           "package_name": "com.chatston.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "359885495778-2csq8k84e5cl317f5g0g8cdah7kc4j4a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyAmRHqWuQ3lUA0aWURtdxPRB0X9F9Q01ZE"
+          "current_key": "AIzaSyCsi19143wtD9sbKlVzJ6NLyORxYOPFxps"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "359885495778-2csq8k84e5cl317f5g0g8cdah7kc4j4a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "359885495778-20a8osqp8gpb2dr28lq9pstjj3unvt7q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mpl11Macadmin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359885495778:android:0ccadf5c14841440f92dbb",
+        "android_client_info": {
+          "package_name": "com.example.mpl11_macadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "359885495778-2csq8k84e5cl317f5g0g8cdah7kc4j4a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsi19143wtD9sbKlVzJ6NLyORxYOPFxps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "359885495778-2csq8k84e5cl317f5g0g8cdah7kc4j4a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "359885495778-20a8osqp8gpb2dr28lq9pstjj3unvt7q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mpl11Macadmin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359885495778:android:b5a2593662c04ec3f92dbb",
+        "android_client_info": {
+          "package_name": "com.mpl11.pk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "359885495778-13mdn45mop2mc3udr90m96nmim6nl0ml.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mpl11.pk",
+            "certificate_hash": "951cc25c18b25b8e3259ee0261fee1530dd71089"
+          }
+        },
+        {
+          "client_id": "359885495778-8gvgjpbpi9k3paid7ni9f8bq34ru79q3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mpl11.pk",
+            "certificate_hash": "95f35d103e82e4dc64ae17e4ee57a26960edc3d2"
+          }
+        },
+        {
+          "client_id": "359885495778-2csq8k84e5cl317f5g0g8cdah7kc4j4a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsi19143wtD9sbKlVzJ6NLyORxYOPFxps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "359885495778-2csq8k84e5cl317f5g0g8cdah7kc4j4a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "359885495778-20a8osqp8gpb2dr28lq9pstjj3unvt7q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mpl11Macadmin"
+              }
+            }
+          ]
         }
       }
     }

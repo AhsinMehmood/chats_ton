@@ -1,30 +1,52 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chats_ton/Models/user_model.dart';
+import 'package:chats_ton/Providers/user_provider.dart';
+import 'package:chats_ton/UI/Pages/calls_page.dart';
+import 'package:chats_ton/UI/Pages/chats_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-
+import 'package:stream_chat_flutter/stream_chat_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../../Global/color.dart';
+import '../../Global/var.dart';
 import '../../Models/language_model.dart';
 import '../../Providers/app_provider.dart';
-import 'Chat/chats_page.dart';
+import 'contacts_page.dart';
+import 'groupes_page.dart';
 
-class TabsPage extends StatelessWidget {
+class TabsPage extends StatefulWidget {
   const TabsPage({super.key});
+
+  @override
+  State<TabsPage> createState() => _TabsPageState();
+}
+
+class _TabsPageState extends State<TabsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized();
+    // _connectChatUser(context);
+  }
 
   @override
   Widget build(BuildContext context) {
     final UserModel userModel = Provider.of<UserModel>(context);
     final AppProvider appProvider = Provider.of<AppProvider>(context);
+
     AppColor app = AppColor();
     List<Widget> _body = [
       const ChatsPage(),
-      Container(),
-      Container(),
-      Container(),
+      const GroupesPages(),
+      const CallsPage(),
+      const ContactsPage(),
       Container(),
     ];
+
     return Scaffold(
       body: _body[appProvider.tabIndex],
       bottomNavigationBar: Card(

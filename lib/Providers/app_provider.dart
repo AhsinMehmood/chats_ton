@@ -1,5 +1,7 @@
+import 'package:chats_ton/Models/app_settings.dart';
 import 'package:chats_ton/Models/language_model.dart';
 import 'package:chats_ton/l10n/en.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class AppProvider with ChangeNotifier {
@@ -30,5 +32,14 @@ class AppProvider with ChangeNotifier {
   changeTabIndex(int index) {
     _tabIndex = index;
     notifyListeners();
+  }
+
+  Stream<AppSettings> getAppSettingsStream() {
+    return FirebaseFirestore.instance
+        .collection('appSettings')
+        .doc('XKxGqHRdkKoX6WZg9S0f')
+        .snapshots()
+        .map((event) =>
+            AppSettings.fromJson(event.data() as Map<String, dynamic>));
   }
 }

@@ -1,17 +1,24 @@
 import 'dart:async';
 
+import 'package:chats_ton/Global/var.dart';
+import 'package:chats_ton/Models/user_model.dart';
+import 'package:chats_ton/Providers/contacts_provider.dart';
+import 'package:chats_ton/Providers/user_provider.dart';
 import 'package:chats_ton/UI/Pages/tabs_page.dart';
 import 'package:chats_ton/UI/Widgets/arrow_botton.dart';
 import 'package:chats_ton/UI/Widgets/loading_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+// import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:stream_chat_flutter/stream_chat_flutter.dart' as stf;
+import 'package:stream_video_flutter/stream_video_flutter.dart' as stv;
 
 import '../../Global/color.dart';
 import '../../Models/language_model.dart';
@@ -244,11 +251,88 @@ class _OtpPageState extends State<OtpPage> {
           await SharedPreferences.getInstance();
       await FirebaseAuth.instance
           .signInWithCredential(credential)
-          .then((UserCredential userCredential) {
+          .then((UserCredential userCredential) async {
         if (userCredential.additionalUserInfo!.isNewUser) {
           createNewUser(userCredential);
         } else {
+          final chatClient = stf.StreamChat.of(context).client;
+          DocumentSnapshot<Map<String, dynamic>> userCurrent =
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userCredential.user!.uid)
+                  .get();
+          UserModel userModel =
+              UserModel.fromJson(userCurrent.data()!, userCurrent.id);
+          sharedPreferences.setString(
+              'userName', '${userModel.firstName} ${userModel.lastName}');
+          sharedPreferences.setString('imageUrl', userModel.imageUrl);
           sharedPreferences.setString('userId', userCredential.user!.uid);
+          sharedPreferences.setString('phoneNumber', widget.phoneNumber);
+          await messaging.requestPermission(
+            alert: true,
+            announcement: true,
+            badge: true,
+            carPlay: false,
+            criticalAlert: false,
+            provisional: false,
+            sound: true,
+          );
+          String? token = await messaging.getToken();
+
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCurrent.id)
+              .update({'pushToken': token});
+          await Future.delayed(const Duration(seconds: 1));
+          // ignore: use_build_context_synchronously
+
+          // final UserModel user = Provider.of(context, listen: false);
+
+          chatClient.disconnectUser();
+          stv.StreamVideo.reset(disconnect: true);
+          chatClient.closeConnection();
+
+          // log(i!);
+
+          String userToken = UserProvider().createToken(
+              '9vk52k6wjnj6', sharedPreferences.getString('userId')!);
+
+          await chatClient.connectUser(
+            stf.User(
+              id: sharedPreferences.getString('userId')!,
+              name: sharedPreferences.getString('userName'),
+              // role: 'own',
+              lastActive: DateTime.now(),
+              image: sharedPreferences.getString('imageUrl'),
+
+              // online: user.activeStatus == 'Active' ? true : false,
+            ),
+            userToken,
+          );
+          await chatClient.updateUser(
+              stf.User(id: sharedPreferences.getString('userId')!, extraData: {
+            'pushToken': token,
+          }));
+
+          stv.StreamVideo(
+            chatApiKey,
+            user: stv.User(
+              info: stv.UserInfo(
+                id: sharedPreferences.getString('userId')!,
+                name:
+                    sharedPreferences.getString('userName') ?? 'Ahsan Mehmood',
+                image: sharedPreferences.getString('imageUrl'),
+                // extraData: {
+                //   'pushToken': token,
+                // },
+              ),
+
+              // online: user.activeStatus == 'Active' ? true : false,
+            ),
+            userToken: userToken,
+          );
+
+          ContactsProvider().requestContactPermission();
           Get.close(1);
           Get.offAll(() => const TabsPage());
         }
@@ -265,10 +349,22 @@ class _OtpPageState extends State<OtpPage> {
     // } else {}
   }
 
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
   createNewUser(UserCredential userCredential) async {
     try {
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
+      await messaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+      String? token = await messaging.getToken();
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -276,11 +372,12 @@ class _OtpPageState extends State<OtpPage> {
         'userId': userCredential.user!.uid,
         'phoneNumber': widget.phoneNumber,
         'countryCode': widget.countryCode,
+        'pushToken': token,
         'createdAt': DateTime.now().toIso8601String(),
       }).then((value) {
         Get.close(1);
         sharedPreferences.setString('userId', userCredential.user!.uid);
-
+        sharedPreferences.setString('phoneNumber', widget.phoneNumber);
         Get.offAll(() => const CompleteProfilePage());
       });
     } catch (e) {
