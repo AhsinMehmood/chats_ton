@@ -128,7 +128,8 @@ class _ContactsPageState extends State<ContactsPage> {
                     ),
                   ),
                   StreamBuilder<List<UserModel>>(
-                      stream: ContactsProvider().contactsDetailsStream(),
+                      stream: ContactsProvider()
+                          .contactsDetailsStream(userModel.contacts),
                       builder:
                           (context, AsyncSnapshot<List<UserModel>> snapshot) {
                         if (snapshot.connectionState ==
@@ -145,6 +146,7 @@ class _ContactsPageState extends State<ContactsPage> {
                           ));
                         }
                         List<UserModel> contactDetailsStream = snapshot.data!;
+                        print(contactDetailsStream.length);
 
                         return Expanded(
                           child: ListView.builder(

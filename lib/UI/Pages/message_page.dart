@@ -1,4 +1,5 @@
 import 'package:chats_ton/Providers/voice_call_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -146,6 +147,7 @@ class _ChannelPageState extends State<ChannelPage> {
           Expanded(
             child: StreamMessageListView(
               showConnectionStateTile: true,
+
               highlightInitialMessage: true,
 
               // onMessageSwiped: (message) {
@@ -188,22 +190,31 @@ class _ChannelPageState extends State<ChannelPage> {
           ),
           textField.StreamMessageInput(
             onMessageSent: (Message message) async {
-              String messageType;
-              if (message.text == null) {
-                await VoiceCallProvider().sendMessageNotification(
-                    channelId: channel.id!,
-                    recipientToken: userModel.pushToken,
-                    userModel: userModel,
-                    message: message.text!,
-                    messageType: 'File');
-              } else {
-                await VoiceCallProvider().sendMessageNotification(
-                    channelId: channel.id!,
-                    recipientToken: userModel.pushToken,
-                    userModel: userModel,
-                    message: message.text!,
-                    messageType: 'text');
+              List<Member> withoutCurrentUserMamaber = members
+                  .where((element) => element.userId != userModel.userId)
+                  .toList();
+              for (Member memebr in withoutCurrentUserMamaber) {
+                if (message.text == null) {
+                  await VoiceCallProvider().sendMessageNotification(
+                      channelId: channel.id!,
+                      recipientToken:
+                          memebr.user!.extraData['pushToken'].toString(),
+                      userModel: userModel,
+                      message: message.text!,
+                      messageType: 'File');
+                } else {
+                  await VoiceCallProvider().sendMessageNotification(
+                      channelId: channel.id!,
+                      recipientToken:
+                          memebr.user!.extraData['pushToken'].toString(),
+                      userModel: userModel,
+                      message: message.text!,
+                      messageType: 'text');
+                }
               }
+
+              // String messageType;
+
               // await Future.delayed(const Duration(seconds: 2));
 
               // await VoiceCallProvider().sendCallNotification(

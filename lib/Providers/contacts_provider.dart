@@ -16,22 +16,19 @@ class ContactsProvider with ChangeNotifier {
     // '+8801726592137',
     // '+923140903980',
   ];
-  Stream<List<UserModel>> contactsDetailsStream() async* {
+  Stream<List<UserModel>> contactsDetailsStream(List cdontacts) async* {
     print('object');
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    List<String> phoneNumbers =
-        sharedPreferences.getStringList('contacts') ?? [];
-
+    // List<String> phoneNumbers =
+    //     sharedPreferences.getStringList('contacts') ?? [];
+    // print(phoneNumbers.length);
     // final List<String> phoneNumbers = userModel.contacts;
     const batchSize = 30; // Maximum batch size per query
 
     // Split the phone numbers into batches
-    for (int i = 0; i < phoneNumbers.length; i += batchSize) {
-      final batch = phoneNumbers.sublist(
-          i,
-          i + batchSize < phoneNumbers.length
-              ? i + batchSize
-              : phoneNumbers.length);
+    for (int i = 0; i < cdontacts.length; i += batchSize) {
+      final batch = cdontacts.sublist(i,
+          i + batchSize < cdontacts.length ? i + batchSize : cdontacts.length);
 
       // Perform a Firestore query with the current batch
       final querySnapshot = await FirebaseFirestore.instance

@@ -480,6 +480,52 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: widget.navigatorKey,
       builder: (context, child) => chatClientSDK.StreamChat(
         client: widget.client,
+        streamChatThemeData: chatClientSDK.StreamChatThemeData(
+          reactionIcons: [
+            chatClientSDK.StreamReactionIcon(
+                type: 'love',
+                builder: (context, value, ss) {
+                  return const Icon(Icons.heart_broken);
+                })
+          ],
+          channelHeaderTheme: chatClientSDK.StreamChannelHeaderThemeData(
+            subtitleStyle: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w400,
+            ),
+            titleStyle: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          otherMessageTheme: chatClientSDK.StreamMessageThemeData(
+              reactionsMaskColor:
+                  AppColor().changeColor(color: AppColor().purpleColor)),
+          ownMessageTheme: chatClientSDK.StreamMessageThemeData(
+              messageTextStyle: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+
+              // ignore: deprecated_member_use
+              linkBackgroundColor:
+                  AppColor().changeColor(color: AppColor().purpleColor),
+              messageLinksStyle: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              reactionsMaskColor:
+                  AppColor().changeColor(color: AppColor().purpleColor),
+              messageBackgroundColor:
+                  AppColor().changeColor(color: AppColor().purpleColor)),
+          colorTheme: chatClientSDK.StreamColorTheme.light(
+              accentPrimary:
+                  AppColor().changeColor(color: AppColor().purpleColor)),
+        ),
         child: child!,
       ),
 
