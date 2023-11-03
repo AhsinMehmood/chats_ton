@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:ui';
+
 import 'package:chats_ton/Providers/voice_call_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +16,9 @@ import '../../Global/color.dart';
 import '../../Models/user_model.dart';
 import '../Calling/video_calling_page.dart';
 import '../Calling/voice_calling_page.dart';
+import '../Widgets/custom_thread_header.dart';
 import '../Widgets/message_textfield.dart' as textField;
+import 'dart:math' as math;
 
 class ChannelPage extends StatefulWidget {
   // final Channel streamChannal;
@@ -60,15 +65,23 @@ class _ChannelPageState extends State<ChannelPage> {
     }
   }
 
+  Message? quotedMessage;
+  late final messageInputController = StreamMessageInputController();
+  final focusNode = FocusNode();
+  @override
+  void dispose() {
+    focusNode.dispose();
+
+    messageInputController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final channel = StreamChannel.of(context).channel;
-    // final client = StreamChat.of(context).client;
-    // final channel = StreamChannel.of(context).channel;
+
     final UserModel userModel = Provider.of<UserModel>(context);
-    // final client = StreamChat.of(context).client;
-    // String channelName = widget.streamChannal.image!;
-    // channel.watch();
+
     return Scaffold(
       body: Column(
         children: <Widget>[
@@ -78,32 +91,11 @@ class _ChannelPageState extends State<ChannelPage> {
                 padding: const EdgeInsets.only(right: 0),
                 child: IconButton(
                     onPressed: () async {
-                      try {
-                        Call call = StreamVideo.instance
-                            .makeCall(type: 'video', id: channel.id!);
-                        List<Member> withoutCurrentUserMamaber = members
-                            .where(
-                                (element) => element.userId != userModel.userId)
-                            .toList();
-                        //  call.update(custom: {'imageUrl': });
-                        await call
-                            .getOrCreate(participantIds: [userModel.userId]);
-                        for (Member element in withoutCurrentUserMamaber) {
-                          await VoiceCallProvider().sendCallNotification(
-                              element.user!.extraData['pushToken'].toString(),
-                              userModel,
-                              call.id,
-                              'audio');
-                        }
-
-                        Get.to(() => CallScreen(
-                              call: call,
-                              isVideo: false,
-                            ));
-                      } catch (e) {
-                        print('Error joining or creating call: $e');
-                        debugPrint(e.toString());
-                      }
+                      Get.to(() => CallScreen(
+                            isVideo: false,
+                            channelId: channel.id!,
+                            members: members,
+                          ));
                     },
                     icon: SvgPicture.asset('assets/call_icon.svg')),
               ),
@@ -111,30 +103,23 @@ class _ChannelPageState extends State<ChannelPage> {
                 padding: const EdgeInsets.only(right: 10),
                 child: IconButton(
                   onPressed: () async {
-                    try {
-                      Call call = StreamVideo.instance
-                          .makeCall(type: 'video', id: channel.id!);
-                      List<Member> withoutCurrentUserMamaber = members
-                          .where(
-                              (element) => element.userId != userModel.userId)
-                          .toList();
-                      await call
-                          .getOrCreate(participantIds: [userModel.userId]);
-                      for (Member element in withoutCurrentUserMamaber) {
-                        await VoiceCallProvider().sendCallNotification(
-                            element.user!.extraData['pushToken'].toString(),
-                            userModel,
-                            call.id,
-                            'video');
-                      }
-                      Get.to(() => VideoCallPage(
-                            call: call,
-                            isVideo: true,
-                          ));
-                    } catch (e) {
-                      debugPrint('Error joining or creating call: $e');
-                      debugPrint(e.toString());
-                    }
+                    // if (videoInitialized) {
+
+                    Get.to(() => VideoCallPage(
+                          channelId: channel.id!,
+                          isVideo: true,
+                          members: members,
+                        ));
+                    // channel
+                    //     .sendMessage(Message(
+                    //   type: 'location',
+                    //   text: 'Hello World',
+
+                    // ))
+                    //     .then((value) {e
+                    //   log(value.message.type);
+                    // });
+                    // }
                   },
                   icon: SvgPicture.asset('assets/Video_icon.svg'),
                 ),
@@ -143,15 +128,96 @@ class _ChannelPageState extends State<ChannelPage> {
             backgroundColor:
                 AppColor().changeColor(color: AppColor().purpleColor),
           ),
-          // MessageUserBar(member: member),
           Expanded(
             child: StreamMessageListView(
               showConnectionStateTile: true,
 
               highlightInitialMessage: true,
+              threadBuilder: (context, parent) {
+                return ThreadPage(parent: parent!);
+              },
+              messageBuilder: (context, MessageDetails messageDetails, messages,
+                  defaultWidget) {
+                const threshold = 0.2;
 
+                final isMyMessage = messageDetails.isMyMessage;
+
+                // The direction in which the message can be swiped.
+                final swipeDirection = isMyMessage
+                    ? SwipeDirection.endToStart //
+                    : SwipeDirection.startToEnd;
+                return Swipeable(
+                  key: ValueKey(messageDetails.message.id),
+                  direction: swipeDirection,
+                  swipeThreshold: threshold,
+                  onSwiped: (details) => reply(messageDetails.message),
+                  backgroundBuilder: (context, details) {
+                    // The alignment of the swipe action.
+                    final alignment = isMyMessage
+                        ? Alignment.centerRight //
+                        : Alignment.centerLeft;
+
+                    // The progress of the swipe action.
+                    final progress =
+                        math.min(details.progress, threshold) / threshold;
+
+                    // The offset for the reply icon.
+                    var offset = Offset.lerp(
+                      const Offset(-24, 0),
+                      const Offset(12, 0),
+                      progress,
+                    )!;
+
+                    // If the message is mine, we need to flip the offset.
+                    if (isMyMessage) {
+                      offset = Offset(-offset.dx, -offset.dy);
+                    }
+
+                    final _streamTheme = StreamChatTheme.of(context);
+
+                    return Align(
+                      alignment: alignment,
+                      child: Transform.translate(
+                        offset: offset,
+                        child: Opacity(
+                          opacity: progress,
+                          child: SizedBox.square(
+                            dimension: 30,
+                            child: CustomPaint(
+                              painter: AnimatedCircleBorderPainter(
+                                progress: progress,
+                                color: _streamTheme.colorTheme.borders,
+                              ),
+                              child: Center(
+                                child: StreamSvgIcon.reply(
+                                  size: lerpDouble(0, 18, progress),
+                                  color: _streamTheme.colorTheme.accentPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  child: defaultWidget
+                      .copyWith(onReplyTap: reply, customAttachmentBuilders: {
+                    'call': (context, message, attatchments) {
+                      return WrapAttachmentWidget(
+                          attachmentWidget: Card(
+                            child: Text('Call'),
+                          ),
+                          attachmentShape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ));
+                    }
+                  }),
+                );
+              },
               // onMessageSwiped: (message) {
-              //   channel.;
+              //   setState(() {
+              //     quotedMessage = message;
+              //   });
               // },
 
               dateDividerBuilder: (dateTime) {
@@ -189,7 +255,14 @@ class _ChannelPageState extends State<ChannelPage> {
             ),
           ),
           textField.StreamMessageInput(
+            quotedMessageBuilder: (context, messageNew) {
+              return Text(messageNew.text ?? '');
+            },
+            onQuotedMessageCleared: messageInputController.clearQuotedMessage,
+            focusNode: focusNode,
+            messageInputController: messageInputController,
             onMessageSent: (Message message) async {
+              log(message.toString());
               List<Member> withoutCurrentUserMamaber = members
                   .where((element) => element.userId != userModel.userId)
                   .toList();
@@ -222,6 +295,45 @@ class _ChannelPageState extends State<ChannelPage> {
             },
 
             // actions: [],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void reply(Message message) {
+    messageInputController.quotedMessage = message;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      focusNode.requestFocus();
+    });
+  }
+}
+
+class ThreadPage extends StatelessWidget {
+  const ThreadPage({
+    super.key,
+    required this.parent,
+  });
+
+  final Message parent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: CustomStreamThreadHeader(
+        parent: parent,
+      ),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: StreamMessageListView(
+              parentMessage: parent,
+            ),
+          ),
+          textField.StreamMessageInput(
+            messageInputController: StreamMessageInputController(
+              message: Message(parentId: parent.id),
+            ),
           ),
         ],
       ),

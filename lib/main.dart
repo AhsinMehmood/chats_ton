@@ -48,23 +48,18 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // runApp(MyNewApp());
   final Map<String, dynamic> notificationData = message.data;
   StreamVideo.reset();
-  print(notificationData);
+
   if (notificationData['type'] == 'call') {
     String userToken = UserProvider()
         .createToken(chatApiKey, sharedPreferences.getString('userId')!);
-    StreamVideo(
-      chatApiKey,
-      user: User(
-        info: UserInfo(
-          id: sharedPreferences.getString('userId')!,
-          name: sharedPreferences.getString('userName') ?? 'Ahsan Mehmood',
-          image: sharedPreferences.getString('imageUrl'),
-        ),
-
-        // online: user.activeStatus == 'Active' ? true : false,
-      ),
-      userToken: userToken,
-    );
+    StreamVideo(chatApiKey,
+        user: User(
+            info: UserInfo(
+                id: sharedPreferences.getString('userId')!,
+                name:
+                    sharedPreferences.getString('userName') ?? 'Ahsan Mehmood',
+                image: sharedPreferences.getString('imageUrl'))),
+        userToken: userToken);
     CallKitParams callKitParams = CallKitParams(
       id: notificationData['callerId'],
       nameCaller: notificationData['callerName'],
@@ -89,7 +84,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           isCustomNotification: true,
           isShowLogo: true,
           ringtonePath: 'system_ringtone_default',
-          backgroundColor: '#0955fa',
+          backgroundColor: '#925FE2',
           backgroundUrl: notificationData['callerImageUrl'],
           actionColor: '#4CAF50',
           incomingCallNotificationChannelName: message.data['callType'],
@@ -112,7 +107,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       ),
     );
     FlutterCallkitIncoming.showCallkitIncoming(callKitParams);
-    listenCallKitBackGround(message.data);
+    listenCallKit(message.data);
   } else {
     print('message');
   }
@@ -120,104 +115,53 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: $message");
 }
 
-listenCallKitBackGround(Map<String, dynamic> map) async {
-  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+listenCallKit(Map<String, dynamic> map) async {
   FlutterCallkitIncoming.onEvent.listen((CallEvent? event) async {
     switch (event!.event) {
       case Event.actionCallIncoming:
-        //  received an incoming call
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Incoming');
-        log('Call Incoming');
         break;
       case Event.actionCallStart:
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Call Started');
-
-        //  started an outgoing call
-        //  show screen calling in Flutter
-        log('Call Started');
-
         break;
       case Event.actionCallAccept:
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Call Accepted');
-
-        log('Call Accept');
-        Call call =
-            StreamVideo.instance.makeCall(type: 'video', id: map['callId']);
-
-        await call.getOrCreate(participantIds: [
-          sharedPreferences.getString('userId')!,
-          map['callerId']
-        ]);
         if (map['callType'] == 'audio') {
           Navigator.push(navigatorKey.currentState!.context,
               MaterialPageRoute(builder: (context) {
-            return CallScreen(call: call, isVideo: true);
+            return CallScreen(
+                channelId: map['channelId'], members: [], isVideo: true);
           }));
         } else {
           Navigator.push(navigatorKey.currentState!.context,
               MaterialPageRoute(builder: (context) {
-            return VideoCallPage(call: call, isVideo: true);
+            return VideoCallPage(
+                channelId: map['channelId'], members: [], isVideo: true);
           }));
         }
-
-        // Get.to(() =>
-        //     CallScreen(secondUser: map['callerId'], callId: map['callId']));
-        //  accepted an incoming call
-        //  show screen calling in Flutter
         break;
       case Event.actionCallDecline:
-        log('Call Decline');
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Call Declined');
-
-        //  declined an incoming call
         break;
       case Event.actionCallEnded:
-        log('Call Call Ended');
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Call Ended');
-        // Navigator.pop(context);
-        //  ended an incoming/outgoing call
+        Navigator.pop(
+          navigatorKey.currentState!.context,
+        );
+
         break;
       case Event.actionCallTimeout:
-        log('Call Timeout');
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Missed Call');
-
-        //  missed an incoming call
         break;
       case Event.actionCallCallback:
-        log('Call Call Back android miss notification');
-
-        //  only Android - click action `Call back` from missed call notification
         break;
       case Event.actionCallToggleHold:
-        log('Call On Hold');
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Call on Hold');
-
-        //  only iOS
         break;
       case Event.actionCallToggleMute:
-        log('Call Mute');
-        VoiceCallProvider().updateCallMessage(map['callId'], 'Call on Mute');
-
-        //  only iOS
         break;
       case Event.actionCallToggleDmtf:
-        log('Call DMTF');
-
-        //  only iOS
         break;
       case Event.actionCallToggleGroup:
-        log('Call Incoming');
-
-        //  only iOS
         break;
       case Event.actionCallToggleAudioSession:
-        //  only iOS
         break;
       case Event.actionDidUpdateDevicePushTokenVoip:
-        //  only iOS
         break;
       case Event.actionCallCustom:
-        //  for custom action
         break;
     }
   });
@@ -228,18 +172,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FastCachedImageConfig.init(clearCacheAfter: const Duration(days: 15));
 
-  /// 1.1.1 define a navigator key
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-//   final chatPersistentClient = StreamChatPersistenceClient(
-//   logLevel: Level.INFO,
-//   connectionMode: ConnectionMode.background,
-// );
+
   final client = chatClientSDK.StreamChatClient(
     chatApiKey,
-    logLevel: chatClientSDK.Level.INFO,
+    logLevel: chatClientSDK.Level.OFF,
   );
 
 //   StreamVideo.in(
@@ -303,164 +242,31 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  listenCallKit(Map<String, dynamic> map) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    FlutterCallkitIncoming.onEvent.listen((CallEvent? event) async {
-      switch (event!.event) {
-        case Event.actionCallIncoming:
-          //  received an incoming call
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Incoming');
-          log('Call Incoming');
-          break;
-        case Event.actionCallStart:
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Call Started');
-
-          //  started an outgoing call
-          //  show screen calling in Flutter
-          log('Call Started');
-
-          break;
-        case Event.actionCallAccept:
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Call Accepted');
-
-          log('Call Accept');
-          Call call =
-              StreamVideo.instance.makeCall(type: 'video', id: map['callId']);
-
-          await call.getOrCreate(participantIds: [
-            sharedPreferences.getString('userId')!,
-            map['callerId']
-          ]);
-          Navigator.push(context, MaterialPageRoute(builder: (
-            context,
-          ) {
-            return VideoCallPage(
-              call: call,
-              isVideo: true,
-            );
-          }));
-          // Get.to(() =>
-          //     CallScreen(secondUser: map['callerId'], callId: map['callId']));
-          //  accepted an incoming call
-          //  show screen calling in Flutter
-          break;
-        case Event.actionCallDecline:
-          log('Call Decline');
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Call Declined');
-
-          //  declined an incoming call
-          break;
-        case Event.actionCallEnded:
-          log('Call Call Ended');
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Call Ended');
-          // Navigator.pop(context);
-          //  ended an incoming/outgoing call
-          break;
-        case Event.actionCallTimeout:
-          log('Call Timeout');
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Missed Call');
-
-          //  missed an incoming call
-          break;
-        case Event.actionCallCallback:
-          log('Call Call Back android miss notification');
-
-          //  only Android - click action `Call back` from missed call notification
-          break;
-        case Event.actionCallToggleHold:
-          log('Call On Hold');
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Call on Hold');
-
-          //  only iOS
-          break;
-        case Event.actionCallToggleMute:
-          log('Call Mute');
-          VoiceCallProvider().updateCallMessage(map['callId'], 'Call on Mute');
-
-          //  only iOS
-          break;
-        case Event.actionCallToggleDmtf:
-          log('Call DMTF');
-
-          //  only iOS
-          break;
-        case Event.actionCallToggleGroup:
-          log('Call Incoming');
-
-          //  only iOS
-          break;
-        case Event.actionCallToggleAudioSession:
-          //  only iOS
-          break;
-        case Event.actionDidUpdateDevicePushTokenVoip:
-          //  only iOS
-          break;
-        case Event.actionCallCustom:
-          //  for custom action
-          break;
-      }
-    });
-  }
-
   @override
   void initState() {
     super.initState();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // Handle incoming FCM messages
-      // final callType = message.data['callType'];
-      // final callId = message.data['callId'];
       final Map<String, dynamic> notificationData = message.data;
-      print('Notification Type ${notificationData['type']}');
+
       if (notificationData['type'] == 'call') {
-        CallKitParams callKitParams = CallKitParams(
-          id: notificationData['callerId'],
-          nameCaller: notificationData['callerName'],
-          appName: 'Chats Ton',
-          avatar: notificationData['callerImageUrl'],
-          handle: notificationData['callerPhoneNumber'],
-          type: 0,
-          textAccept: 'Accept',
-          textDecline: 'Decline',
-          missedCallNotification: const NotificationParams(
-            showNotification: true,
-            isShowCallback: true,
-            subtitle: 'Missed call',
-            callbackText: 'Call back',
-          ),
-          duration: 30000,
-          // extra: <String, dynamic>{
-          //   'userId': userModel.userId,
-          // },
-          // headers: <String, dynamic>{'apiKey': 'Abc@123!', 'platform': 'flutter'},
-          android: AndroidParams(
-              isCustomNotification: true,
-              isShowLogo: true,
-              ringtonePath: 'system_ringtone_default',
-              backgroundColor: '#0955fa',
-              backgroundUrl: notificationData['callerImageUrl'],
-              actionColor: '#4CAF50',
-              incomingCallNotificationChannelName: "Incoming Call",
-              missedCallNotificationChannelName: "Missed Call"),
-          ios: const IOSParams(
-            iconName: 'CallKitLogo',
-            handleType: 'generic',
-            supportsVideo: true,
-            maximumCallGroups: 2,
-            maximumCallsPerCallGroup: 1,
-            audioSessionMode: 'default',
-            audioSessionActive: true,
-            audioSessionPreferredSampleRate: 44100.0,
-            audioSessionPreferredIOBufferDuration: 0.005,
-            supportsDTMF: true,
-            supportsHolding: true,
-            supportsGrouping: false,
-            supportsUngrouping: false,
-            ringtonePath: 'system_ringtone_default',
-          ),
-        );
-        FlutterCallkitIncoming.showCallkitIncoming(callKitParams);
-        listenCallKit(message.data);
+        if (notificationData['callType'] == 'audio') {
+          Navigator.push(navigatorKey.currentState!.context,
+              MaterialPageRoute(builder: (context) {
+            return CallScreen(
+                channelId: notificationData['channelId'],
+                members: [],
+                isVideo: true);
+          }));
+        } else {
+          Navigator.push(navigatorKey.currentState!.context,
+              MaterialPageRoute(builder: (context) {
+            return VideoCallPage(
+                channelId: notificationData['channelId'],
+                members: [],
+                isVideo: true);
+          }));
+        }
       } else {
         print(notificationData['type']);
       }

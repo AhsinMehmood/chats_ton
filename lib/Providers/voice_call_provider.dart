@@ -30,7 +30,7 @@ class VoiceCallProvider with ChangeNotifier {
         'callerName': '${userModel.firstName} ${userModel.lastName}',
         'callerImageUrl': userModel.imageUrl,
         'callerPhoneNumber': userModel.phoneNumber,
-        'callId': callId,
+        'channelId': callId,
         'callType': callType,
 
         // Recipient's FCM token
