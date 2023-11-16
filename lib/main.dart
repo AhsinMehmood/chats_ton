@@ -1,170 +1,46 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, library_prefixes
 
-import 'dart:developer';
-
+import 'package:camera/camera.dart';
 import 'package:chats_ton/Global/color.dart';
-import 'package:chats_ton/Models/app_settings.dart';
 import 'package:chats_ton/Models/chats_model.dart';
-import 'package:chats_ton/Models/status_model.dart';
 import 'package:chats_ton/Models/user_model.dart';
+import 'package:chats_ton/Notification/notification_service.dart';
 import 'package:chats_ton/Providers/app_provider.dart';
+import 'package:chats_ton/Providers/call_service_provider.dart';
 import 'package:chats_ton/Providers/contacts_provider.dart';
 import 'package:chats_ton/Providers/conversation_provider.dart';
+import 'package:chats_ton/Providers/group_post_provider.dart';
 import 'package:chats_ton/Providers/group_provider.dart';
 import 'package:chats_ton/Providers/message_provider.dart';
 import 'package:chats_ton/Providers/status_provider.dart';
 import 'package:chats_ton/Providers/user_provider.dart';
-import 'package:chats_ton/Providers/voice_call_provider.dart';
-import 'package:chats_ton/UI/Calling/voice_calling_page.dart';
-import 'package:chats_ton/UI/Pages/calls_page.dart';
-import 'package:chats_ton/UI/Widgets/social_media_audio_recorder.dart';
 import 'package:chats_ton/UI/splash_screen.dart';
 import 'package:fast_cached_network_image/fast_cached_network_image.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_callkit_incoming/entities/entities.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart' as chatClientSDK;
 // import 'package:stream_chat_persistence/stream_chat_persistence.dart';
-import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 // import 'package:video_player_media_kit/video_player_media_kit.dart';
 
 // import 'UI/Calling/video_call_page.dart';
-import 'UI/Calling/video_calling_page.dart';
+import 'Providers/group_get_controller.dart';
+import 'UI/Pages/camera_view.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
   // runApp(MyNewApp());
   final Map<String, dynamic> notificationData = message.data;
-  StreamVideo.reset();
-
-  if (notificationData['type'] == 'call') {
-    String userToken = UserProvider()
-        .createToken(chatApiKey, sharedPreferences.getString('userId')!);
-    StreamVideo(chatApiKey,
-        user: User(
-            info: UserInfo(
-                id: sharedPreferences.getString('userId')!,
-                name:
-                    sharedPreferences.getString('userName') ?? 'Ahsan Mehmood',
-                image: sharedPreferences.getString('imageUrl'))),
-        userToken: userToken);
-    CallKitParams callKitParams = CallKitParams(
-      id: notificationData['callerId'],
-      nameCaller: notificationData['callerName'],
-      appName: 'Chats Ton',
-      avatar: notificationData['callerImageUrl'],
-      handle: notificationData['callerPhoneNumber'],
-      type: 0,
-      textAccept: 'Accept',
-      textDecline: 'Decline',
-      missedCallNotification: NotificationParams(
-        showNotification: true,
-        isShowCallback: false,
-        subtitle: 'Missed ${message.data['callType']}',
-        callbackText: 'Call back',
-      ),
-      duration: 30000,
-      // extra: <String, dynamic>{
-      //   'userId': userModel.userId,
-      // },
-      // headers: <String, dynamic>{'apiKey': 'Abc@123!', 'platform': 'flutter'},
-      android: AndroidParams(
-          isCustomNotification: true,
-          isShowLogo: true,
-          ringtonePath: 'system_ringtone_default',
-          backgroundColor: '#925FE2',
-          backgroundUrl: notificationData['callerImageUrl'],
-          actionColor: '#4CAF50',
-          incomingCallNotificationChannelName: message.data['callType'],
-          missedCallNotificationChannelName: "Missed Call"),
-      ios: const IOSParams(
-        iconName: 'CallKitLogo',
-        handleType: 'generic',
-        supportsVideo: true,
-        maximumCallGroups: 2,
-        maximumCallsPerCallGroup: 1,
-        audioSessionMode: 'default',
-        audioSessionActive: true,
-        audioSessionPreferredSampleRate: 44100.0,
-        audioSessionPreferredIOBufferDuration: 0.005,
-        supportsDTMF: false,
-        supportsHolding: false,
-        supportsGrouping: false,
-        supportsUngrouping: false,
-        ringtonePath: 'system_ringtone_default',
-      ),
-    );
-    FlutterCallkitIncoming.showCallkitIncoming(callKitParams);
-    listenCallKit(message.data);
-  } else {
-    print('message');
-  }
-
-  print("Handling a background message: $message");
-}
-
-listenCallKit(Map<String, dynamic> map) async {
-  FlutterCallkitIncoming.onEvent.listen((CallEvent? event) async {
-    switch (event!.event) {
-      case Event.actionCallIncoming:
-        break;
-      case Event.actionCallStart:
-        break;
-      case Event.actionCallAccept:
-        if (map['callType'] == 'audio') {
-          Navigator.push(navigatorKey.currentState!.context,
-              MaterialPageRoute(builder: (context) {
-            return CallScreen(
-                channelId: map['channelId'], members: [], isVideo: true);
-          }));
-        } else {
-          Navigator.push(navigatorKey.currentState!.context,
-              MaterialPageRoute(builder: (context) {
-            return VideoCallPage(
-                channelId: map['channelId'], members: [], isVideo: true);
-          }));
-        }
-        break;
-      case Event.actionCallDecline:
-        break;
-      case Event.actionCallEnded:
-        Navigator.pop(
-          navigatorKey.currentState!.context,
-        );
-
-        break;
-      case Event.actionCallTimeout:
-        break;
-      case Event.actionCallCallback:
-        break;
-      case Event.actionCallToggleHold:
-        break;
-      case Event.actionCallToggleMute:
-        break;
-      case Event.actionCallToggleDmtf:
-        break;
-      case Event.actionCallToggleGroup:
-        break;
-      case Event.actionCallToggleAudioSession:
-        break;
-      case Event.actionDidUpdateDevicePushTokenVoip:
-        break;
-      case Event.actionCallCustom:
-        break;
-    }
-  });
+  print(notificationData.toString() + ' Background Handler');
+  NotificationService().handleNotifications(notificationData);
 }
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -175,6 +51,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  cameras = await availableCameras();
 
   final client = chatClientSDK.StreamChatClient(
     chatApiKey,
@@ -199,10 +76,9 @@ void main() async {
         StreamProvider<List<ChatsModel>>.value(
           value: ConversationProvider().chatsStream(),
           catchError: (context, error) {
-            print(error);
             return [];
           },
-          initialData: [],
+          initialData: const [],
         ),
         ChangeNotifierProvider<AppProvider>(create: (context) => AppProvider()),
         ChangeNotifierProvider<MessageProvider>(
@@ -217,6 +93,14 @@ void main() async {
             create: (context) => ConversationProvider()),
         ChangeNotifierProvider<GroupProvider>(
             create: (context) => GroupProvider()),
+        ChangeNotifierProvider<GroupPostProvider>(
+            create: (context) => GroupPostProvider()),
+        ChangeNotifierProvider<GroupController>(
+            create: (context) => GroupController()),
+        ChangeNotifierProvider<GroupService>(
+            create: (context) => GroupService()),
+        ChangeNotifierProvider<CallServiceProvider>(
+            create: (context) => CallServiceProvider()),
       ],
       child: MyApp(
         navigatorKey: navigatorKey,
@@ -248,28 +132,9 @@ class _MyAppState extends State<MyApp> {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final Map<String, dynamic> notificationData = message.data;
+      print(notificationData.toString() + ' Actuv Handler');
 
-      if (notificationData['type'] == 'call') {
-        if (notificationData['callType'] == 'audio') {
-          Navigator.push(navigatorKey.currentState!.context,
-              MaterialPageRoute(builder: (context) {
-            return CallScreen(
-                channelId: notificationData['channelId'],
-                members: [],
-                isVideo: true);
-          }));
-        } else {
-          Navigator.push(navigatorKey.currentState!.context,
-              MaterialPageRoute(builder: (context) {
-            return VideoCallPage(
-                channelId: notificationData['channelId'],
-                members: [],
-                isVideo: true);
-          }));
-        }
-      } else {
-        print(notificationData['type']);
-      }
+      NotificationService().handleNotifications(notificationData);
     });
   }
 
@@ -277,6 +142,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
     //     overlays: [SystemUiOverlay.top]);
+
     return GetMaterialApp(
       title: 'Chats Ton',
       // useInheritedMediaQuery: true,

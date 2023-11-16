@@ -9,7 +9,7 @@ class LoadingDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        return true;
+        return false;
       },
       child: Dialog(
         child: Container(

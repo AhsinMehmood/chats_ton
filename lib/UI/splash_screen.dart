@@ -14,6 +14,7 @@ import 'package:chats_ton/UI/Pages/tabs_page.dart';
 import 'package:chats_ton/UI/Widgets/arrow_botton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,8 @@ class _SplashScreenState extends State<SplashScreen> {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   checkUserLogin() async {
+    FirebaseDatabase.instance.setPersistenceEnabled(true);
+
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String userId = sharedPreferences.getString('userId') ?? '';
     if (userId.isNotEmpty) {
@@ -205,7 +208,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     ? Card(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(200),
                         ),
                         elevation: 2.0,
                         shadowColor: AppColor()
@@ -214,7 +217,7 @@ class _SplashScreenState extends State<SplashScreen> {
                           height: 52,
                           width: 52,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(200),
                             color: Colors.white,
                           ),
                           child: Center(

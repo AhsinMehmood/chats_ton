@@ -14,14 +14,18 @@ class VoiceCallProvider with ChangeNotifier {
     "Authorization":
         "key=AAAAU8rY3eI:APA91bF1lU6paj9_JCO6bcE4iFBn-3zDS58_5KE7pv9fbGGjbAsoVAj1Xzntbe1C8gEnxmGXR-lioDBsJyDTxRGL4FdbdLLlKx_dqQ1YR4PbvID-aMFY4gHTZJsz9w6ucK60LXVfixh-"
   };
-  Future<void> sendCallNotification(String recipientToken, UserModel userModel,
-      String callId, String callType) async {
+  Future<void> sendCallNotification(
+      {required String recipientToken,
+      required UserModel userModel,
+      required String messageId,
+      required String callId,
+      required String callType}) async {
     // print(recipientToken);
     String token = recipientToken;
 
     final payload = jsonEncode({
       "notification": {
-        "body": 'Missed Call From ${userModel.firstName} ${userModel.lastName}',
+        "body": '${userModel.firstName} ${userModel.lastName} Called',
         "time": ""
       },
       'data': {
@@ -31,6 +35,7 @@ class VoiceCallProvider with ChangeNotifier {
         'callerImageUrl': userModel.imageUrl,
         'callerPhoneNumber': userModel.phoneNumber,
         'channelId': callId,
+        'messageId': messageId,
         'callType': callType,
 
         // Recipient's FCM token
@@ -47,8 +52,10 @@ class VoiceCallProvider with ChangeNotifier {
       {required String recipientToken,
       required UserModel userModel,
       required String message,
-      required String channelId,
-      required String messageType}) async {
+      required String groupId,
+      required String messageType,
+      required String messageId,
+      String convType = 'oneToOne'}) async {
     // print(recipientToken);
     String token = recipientToken;
 
@@ -64,8 +71,10 @@ class VoiceCallProvider with ChangeNotifier {
         'senderName': '${userModel.firstName} ${userModel.lastName}',
         'senderImageUrl': userModel.imageUrl,
         'senderPhone': userModel.phoneNumber,
-        'channelId': channelId,
+        'groupId': groupId,
+        'convType': convType,
         'messageType': messageType,
+        "messageId": messageId,
 
         // Recipient's FCM token
       },
@@ -90,14 +99,14 @@ class VoiceCallProvider with ChangeNotifier {
       'callDuration': 0,
     }).then((value) async {
       // await Future.delayed(const Duration(seconds: 5));
-      await sendCallNotification(
-              currentUser.pushToken, currentUser, value.id, callType)
-          .then((lue) {
-        // Get.to(() => VideoCallPage(
-        //       secondUser: receiverUser.userId,
-        //       callId: value.id,
-        //     ));
-      });
+      // await sendCallNotification(
+      //         currentUser.pushToken, currentUser, value.id, callType)
+      //     .then((lue) {
+      //   // Get.to(() => VideoCallPage(
+      //   //       secondUser: receiverUser.userId,
+      //   //       callId: value.id,
+      //   //     ));
+      // });
     });
   }
 

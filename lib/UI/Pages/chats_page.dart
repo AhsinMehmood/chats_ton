@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chats_ton/Models/chats_model.dart';
 import 'package:chats_ton/Providers/contacts_provider.dart';
+import 'package:chats_ton/Providers/group_provider.dart';
 import 'package:chats_ton/Providers/user_provider.dart';
 import 'package:chats_ton/UI/splash_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -64,13 +65,14 @@ class _ChatsPageState extends State<ChatsPage> {
                       ),
                       InkWell(
                         onTap: () async {
-                          SharedPreferences sharedPreferences =
-                              await SharedPreferences.getInstance();
-                          sharedPreferences.clear();
-                          FirebaseAuth.instance.signOut();
-                          stf.StreamChat.of(context).client.disconnectUser();
-                          StreamVideo.reset(disconnect: true);
-                          Get.offAll(() => SplashScreen());
+                          // SharedPreferences sharedPreferences =
+                          //     await SharedPreferences.getInstance();
+                          // sharedPreferences.clear();
+                          // FirebaseAuth.instance.signOut();
+                          // stf.StreamChat.of(context).client.disconnectUser();
+                          // StreamVideo.reset(disconnect: true);
+                          // Get.offAll(() => SplashScreen());
+                          // GroupProvider().saveDataToFirebase();
                           // SharedPreferences
                         },
                         child: ClipRRect(

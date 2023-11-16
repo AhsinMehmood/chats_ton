@@ -232,7 +232,11 @@ class _OtpPageState extends State<OtpPage> {
         text = text + value;
       });
     } else {
-      if (text.length == 6) {
+      if (text.length == 5) {
+        setState(() {
+          text = text + value;
+        });
+        verifyOtp();
       } else {
         setState(() {
           text = text + value;

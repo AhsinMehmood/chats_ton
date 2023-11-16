@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chats_ton/Providers/group_get_controller.dart';
 import 'package:chats_ton/Global/color.dart';
 import 'package:chats_ton/Models/user_model.dart';
 import 'package:chats_ton/Providers/group_provider.dart';
@@ -400,12 +401,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               String imageUrl =
                   'https://firebasestorage.googleapis.com/v0/b/chats-ton.appspot.com/o/avatar-1577909_1280.png?alt=media&token=c72d3dd0-722f-45b4-81a1-51ceeb06d29a';
 
-              groupProvider
+              GroupService()
                   .createNewGroup(
+                      currentUserModel: userModel,
                       groupName: groupNameController.text.trim(),
                       groupImageUrl: imageUrl,
                       currentUserId: userModel.userId,
-                      context: context)
+                      memebrIds: groupProvider.selectedMembers)
                   .then((value) {
                 // Get.close(2);
               });

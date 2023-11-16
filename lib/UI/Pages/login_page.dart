@@ -28,11 +28,17 @@ class _LoginPageState extends State<LoginPage> {
   int resendTokens = 0;
   PhoneAuthCredential? phoneAuthCredential;
   _handleOtp() async {
+    String mobileNumber = '';
+    if (phoneNumber.text[0] == '0') {
+      mobileNumber = phoneNumber.text.substring(1);
+    } else {
+      mobileNumber = phoneNumber.text;
+    }
     Get.dialog(const LoadingDialog(), barrierDismissible: false);
 
     await FirebaseAuth.instance
         .verifyPhoneNumber(
-          phoneNumber: _selectedCountry + phoneNumber.text.trim(),
+          phoneNumber: _selectedCountry + mobileNumber,
           verificationCompleted: (PhoneAuthCredential credential) async {
             // setState(() {
             //   phoneAuthCredential = credential;
@@ -53,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
             });
             Get.close(1);
             Get.to(() => OtpPage(
-                  phoneNumber: _selectedCountry + phoneNumber.text.trim(),
+                  phoneNumber: _selectedCountry + mobileNumber,
                   verificationId: verificationId,
                   countryCode: _selectedCountry,
                 ));

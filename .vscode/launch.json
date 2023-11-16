@@ -1,0 +1,46 @@
+// {
+//     // Use IntelliSense to learn about possible attributes.
+//     // Hover to view descriptions of existing attributes.
+//     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "chats_ton",
+//             "request": "launch",
+//             "type": "dart"
+//         },
+//         {
+//             "name": "chats_ton (profile mode)",
+//             "request": "launch",
+//             "type": "dart",
+//             "flutterMode": "profile"
+//         },
+//         {
+//             "name": "chats_ton (release mode)",
+//             "request": "launch",
+//             "type": "dart",
+//             "flutterMode": "release"
+//         },
+//         {
+//             "name": "Infinix X695",
+//             "request": "launch",
+//             "type": "dart",
+//             "deviceId": "074382518V101780"
+//         },
+//         {
+//             "name": "SM A035F",
+//             "request": "launch",
+//             "type": "dart",
+//             "deviceId": "R8VT401SXZM"
+//         },
+//     ],
+//     "compounds": [
+//         {
+//             "name": "All Devices",
+//             "configurations": [
+//                 "SM A035F",
+//                 "Infinix X695",
+//             ]
+//         }
+//     ]
+// }

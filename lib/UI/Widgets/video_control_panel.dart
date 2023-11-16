@@ -20,7 +20,7 @@ class VideoControlPanel extends StatefulWidget {
 
 class _VideoControlPanelState extends State<VideoControlPanel> {
   double _volume = 1.0;
-  // late VideoPlayerController _controller;
+  late VideoPlayerController _controller;
   bool _loading = true;
   @override
   void initState() {

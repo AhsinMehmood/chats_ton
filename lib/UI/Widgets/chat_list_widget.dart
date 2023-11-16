@@ -27,6 +27,7 @@ class _ChatListWidgetState extends State<ChatListWidget> {
     client: StreamChat.of(context).client,
     filter: Filter.and([
       Filter.equal('type', 'messaging'),
+      Filter.exists('last_message_at'),
       // Filter.contains('key', value)
       Filter.in_(
         'members',

@@ -21,7 +21,7 @@ class StoryImage extends StatefulWidget {
 class _StoryImageState extends State<StoryImage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
         width: double.infinity,
         height: double.infinity,
         child: widget.isAsset == true
@@ -30,7 +30,7 @@ class _StoryImageState extends State<StoryImage> {
                 fit: BoxFit.cover,
               )
             : CachedNetworkImage(
-                imageUrl: "${widget.imageUrl}",
+                imageUrl: widget.imageUrl,
                 // fit: BoxFit.cover,
               ));
   }

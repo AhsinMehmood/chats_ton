@@ -91,25 +91,25 @@ class _ChannelPageState extends State<ChannelPage> {
                 padding: const EdgeInsets.only(right: 0),
                 child: IconButton(
                     onPressed: () async {
-                      Get.to(() => CallScreen(
-                            isVideo: false,
-                            channelId: channel.id!,
-                            members: members,
-                          ));
+                      // Get.to(() => CallScreen(
+                      //       isVideo: false,
+                      //       channelId: channel.id!,
+                      //       members: members,
+                      //     ));
                     },
                     icon: SvgPicture.asset('assets/call_icon.svg')),
               ),
               Padding(
-                padding: const EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.only(right: 5),
                 child: IconButton(
                   onPressed: () async {
                     // if (videoInitialized) {
 
-                    Get.to(() => VideoCallPage(
-                          channelId: channel.id!,
-                          isVideo: true,
-                          members: members,
-                        ));
+                    // Get.to(() => VideoCallPage(
+                    //       channelId: channel.id!,
+                    //       isVideo: true,
+                    //       members: members,
+                    //     ));
                     // channel
                     //     .sendMessage(Message(
                     //   type: 'location',
@@ -134,7 +134,11 @@ class _ChannelPageState extends State<ChannelPage> {
 
               highlightInitialMessage: true,
               threadBuilder: (context, parent) {
-                return ThreadPage(parent: parent!);
+                return ThreadPage(
+                  parent: parent!,
+                  channel: channel,
+                  members: members,
+                );
               },
               messageBuilder: (context, MessageDetails messageDetails, messages,
                   defaultWidget) {
@@ -173,7 +177,7 @@ class _ChannelPageState extends State<ChannelPage> {
                       offset = Offset(-offset.dx, -offset.dy);
                     }
 
-                    final _streamTheme = StreamChatTheme.of(context);
+                    final streamTheme = StreamChatTheme.of(context);
 
                     return Align(
                       alignment: alignment,
@@ -186,12 +190,12 @@ class _ChannelPageState extends State<ChannelPage> {
                             child: CustomPaint(
                               painter: AnimatedCircleBorderPainter(
                                 progress: progress,
-                                color: _streamTheme.colorTheme.borders,
+                                color: streamTheme.colorTheme.borders,
                               ),
                               child: Center(
                                 child: StreamSvgIcon.reply(
                                   size: lerpDouble(0, 18, progress),
-                                  color: _streamTheme.colorTheme.accentPrimary,
+                                  color: streamTheme.colorTheme.accentPrimary,
                                 ),
                               ),
                             ),
@@ -269,7 +273,8 @@ class _ChannelPageState extends State<ChannelPage> {
               for (Member memebr in withoutCurrentUserMamaber) {
                 if (message.text == null) {
                   await VoiceCallProvider().sendMessageNotification(
-                      channelId: channel.id!,
+                      groupId: channel.id!,
+                      messageId: message.id,
                       recipientToken:
                           memebr.user!.extraData['pushToken'].toString(),
                       userModel: userModel,
@@ -277,7 +282,8 @@ class _ChannelPageState extends State<ChannelPage> {
                       messageType: 'File');
                 } else {
                   await VoiceCallProvider().sendMessageNotification(
-                      channelId: channel.id!,
+                      groupId: channel.id!,
+                      messageId: message.id,
                       recipientToken:
                           memebr.user!.extraData['pushToken'].toString(),
                       userModel: userModel,
@@ -310,8 +316,12 @@ class _ChannelPageState extends State<ChannelPage> {
 }
 
 class ThreadPage extends StatelessWidget {
+  final List<Member> members;
+  final Channel channel;
   const ThreadPage({
     super.key,
+    required this.channel,
+    required this.members,
     required this.parent,
   });
 
@@ -319,6 +329,7 @@ class ThreadPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final UserModel userModel = Provider.of<UserModel>(context);
     return Scaffold(
       appBar: CustomStreamThreadHeader(
         parent: parent,
@@ -334,6 +345,40 @@ class ThreadPage extends StatelessWidget {
             messageInputController: StreamMessageInputController(
               message: Message(parentId: parent.id),
             ),
+            onMessageSent: (Message message) async {
+              log(message.toString());
+              List<Member> withoutCurrentUserMamaber = members
+                  .where((element) => element.userId != userModel.userId)
+                  .toList();
+              for (Member memebr in withoutCurrentUserMamaber) {
+                if (message.text == null) {
+                  await VoiceCallProvider().sendMessageNotification(
+                      groupId: channel.id!,
+                      messageId: message.id,
+                      recipientToken:
+                          memebr.user!.extraData['pushToken'].toString(),
+                      userModel: userModel,
+                      message: message.text!,
+                      messageType: 'File');
+                } else {
+                  await VoiceCallProvider().sendMessageNotification(
+                      groupId: channel.id!,
+                      messageId: message.id,
+                      recipientToken:
+                          memebr.user!.extraData['pushToken'].toString(),
+                      userModel: userModel,
+                      message: message.text!,
+                      messageType: 'text');
+                }
+              }
+
+              // String messageType;
+
+              // await Future.delayed(const Duration(seconds: 2));
+
+              // await VoiceCallProvider().sendCallNotification(
+              //     userModel.pushToken, userModel, 'helloMessage', 'video');
+            },
           ),
         ],
       ),
@@ -456,7 +501,7 @@ class MessageHeader extends StatelessWidget implements PreferredSizeWidget {
             leading: leadingWidget,
             backgroundColor: backgroundColor ?? channelHeaderTheme.color,
             actions: actions ?? <Widget>[],
-            centerTitle: true,
+            centerTitle: false,
             title: InkWell(
               onTap: onTitleTap,
               child: SizedBox(
@@ -465,7 +510,7 @@ class MessageHeader extends StatelessWidget implements PreferredSizeWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 15),
+                      padding: const EdgeInsets.only(right: 5),
                       child: Center(
                         child: StreamChannelAvatar(
                           channel: channel,
@@ -481,15 +526,19 @@ class MessageHeader extends StatelessWidget implements PreferredSizeWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        title ??
+                        Row(
+                          children: [
                             StreamChannelName(
                               channel: channel,
+                              textOverflow: TextOverflow.ellipsis,
                               textStyle: GoogleFonts.poppins(
                                 color: Colors.white,
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
+                          ],
+                        ),
                         const SizedBox(height: 2),
                         subtitle ??
                             StreamChannelInfo(
@@ -580,14 +629,7 @@ class StreamBackButton extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        RawMaterialButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          elevation: 0,
-          highlightElevation: 0,
-          focusElevation: 0,
-          hoverElevation: 0,
+        IconButton(
           onPressed: () {
             if (onPressed != null) {
               onPressed!();
@@ -596,16 +638,16 @@ class StreamBackButton extends StatelessWidget {
             }
           },
           padding: const EdgeInsets.all(14),
-          child: SvgPicture.asset('assets/Back_icon.svg'),
+          icon: SvgPicture.asset('assets/Back_icon.svg'),
         ),
-        if (showUnreadCount)
-          Positioned(
-            top: 7,
-            right: 7,
-            child: StreamUnreadIndicator(
-              cid: channelId,
-            ),
-          ),
+        // if (showUnreadCount)
+        //   Positioned(
+        //     top: 7,
+        //     right: 7,
+        //     child: StreamUnreadIndicator(
+        //       cid: channelId,
+        //     ),
+        //   ),
       ],
     );
   }

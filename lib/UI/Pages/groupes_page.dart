@@ -1,15 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chats_ton/Global/color.dart';
+import 'package:chats_ton/Models/group_model.dart';
 import 'package:chats_ton/UI/Pages/create_group_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
+import '../../Providers/group_get_controller.dart';
 import '../../Models/user_model.dart';
+import 'group_message_page.dart';
 import 'message_page.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class GroupesPages extends StatefulWidget {
   const GroupesPages({super.key});
@@ -19,19 +22,13 @@ class GroupesPages extends StatefulWidget {
 }
 
 class _GroupesPagesState extends State<GroupesPages> {
-  late final _listController = StreamChannelListController(
-    client: StreamChat.of(context).client,
-    filter: Filter.and([
-      Filter.equal('type', 'groups'),
-      // Filter.contains('key', value)
-      Filter.in_(
-        'members',
-        [StreamChat.of(context).currentUser!.id],
-      ),
-    ]),
-    sort: const [SortOption('last_message_at')],
-    limit: 50,
-  );
+  @override
+  void initState() {
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized();
+    // getData();
+  }
+
   @override
   Widget build(BuildContext context) {
     AppColor app = AppColor();
@@ -49,7 +46,7 @@ class _GroupesPagesState extends State<GroupesPages> {
             top: 100,
             child: Container(
               height: Get.height,
-              padding: const EdgeInsets.all(13),
+              padding: const EdgeInsets.all(10),
               width: Get.width,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -64,6 +61,10 @@ class _GroupesPagesState extends State<GroupesPages> {
   }
 
   Widget lowerCard(context) {
+    // final List<GroupModel> groups =
+    //     Provider.of<GroupController>(context).groups;
+    final UserModel userModel = Provider.of<UserModel>(context);
+
     return Column(
       children: [
         const SizedBox(
@@ -84,44 +85,59 @@ class _GroupesPagesState extends State<GroupesPages> {
           height: 12,
         ),
         Expanded(
-          child: StreamChannelListView(
-            controller: _listController,
-            shrinkWrap: true,
-            emptyBuilder: (context) {
-              return const Center(
-                child: Text('No Groups Yet!'),
-              );
-            },
-            itemBuilder: (context, items, index, defaultWidget) {
-              final channel = items[index];
+            child: StreamBuilder<List<GroupModel>>(
+          stream: GroupService().getGroupListStream(userModel.userId),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final groups = snapshot.data ?? [];
+              if (groups.isEmpty) {
+                return const Center(child: Text('No Groups Yet!'));
+              }
+              return ListView.builder(
+                itemCount: groups.length,
+                itemBuilder: (context, index) {
+                  final group = groups[index];
 
-              return defaultWidget.copyWith(
-                onTap: () {
-                  Get.to(() => StreamChannel(
-                      showLoading: false,
-                      channel: channel,
-                      child: const ChannelPage()));
+                  return groupsChatCard(group);
                 },
-                channel: channel,
-                leading: StreamChannelAvatar(channel: channel),
-                contentPadding: const EdgeInsets.only(left: 15, right: 15),
               );
-            },
-          ),
-        ),
+            } else if (!snapshot.hasData) {
+              return const Center(child: Text('No Groups Yet!'));
+            } else {
+              return const CircularProgressIndicator();
+            }
+          },
+        )),
       ],
     );
   }
 
-  Widget groupsChatCard(context) {
+  Widget groupsChatCard(GroupModel groupModel) {
     final UserModel userModel = Provider.of<UserModel>(context);
 
+    final lastMessage = groupModel.getLastMessage();
+    final int unreadCount = groupModel.getUnreadMessageCount(userModel.userId);
+
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(left: 0, right: 0, bottom: 0),
       child: ListTile(
+        onTap: () {
+          Get.to(() => GroupChannelPage(
+                groupModel: groupModel,
+              ));
+          for (Message element in groupModel.messages.values) {
+            if (element.senderId != userModel.userId) {
+              if (element.status != 'read') {
+                GroupService().updateMessageStatus(
+                    element.messageId, groupModel.groupChatId, 'read');
+              }
+            }
+          }
+        },
+        // isThreeLine: true,
         leading: Container(
-          height: 52,
-          width: 52,
+          height: 48,
+          width: 48,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(250),
@@ -129,26 +145,62 @@ class _GroupesPagesState extends State<GroupesPages> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(250),
             child: CachedNetworkImage(
-              imageUrl: userModel.imageUrl,
-              height: 52,
-              width: 52,
+              imageUrl: groupModel.groupImage,
+              height: 48,
+              width: 48,
               fit: BoxFit.cover,
             ),
           ),
         ),
         title: Text(
-          'Graphic Designing',
+          groupModel.groupName,
+          overflow: TextOverflow.ellipsis,
           style: GoogleFonts.poppins(
             fontSize: 14,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w500,
             color: Colors.black,
           ),
         ),
+        trailing: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              timeago.format(
+                DateTime.fromMillisecondsSinceEpoch(
+                    lastMessage == null ? 0 : lastMessage.timestamp * 1000),
+              ),
+              style: GoogleFonts.poppins(color: Colors.black, fontSize: 10),
+            ),
+            unreadCount == 0
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                  )
+                : Container(
+                    height: 18,
+                    width: 18,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    padding: const EdgeInsets.all(0),
+                    child: Center(
+                      child: Text(
+                        unreadCount.toString(),
+                        style: GoogleFonts.poppins(
+                            color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ),
+          ],
+        ),
         subtitle: Text(
-          'Ali: Hey how are you?',
+          lastMessage == null ? '' : lastMessage.text,
+          maxLines: 1,
           style: GoogleFonts.poppins(
               fontSize: 12,
-              fontWeight: FontWeight.w400,
+              fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.w400,
               color: AppColor().changeColor(color: '797C7B')),
         ),
       ),
